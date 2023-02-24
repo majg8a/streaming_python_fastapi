@@ -21,6 +21,9 @@ def getVideo(nameVideo: str, range: str = Header(None)):
             yield from file
 
     return StreamingResponse(iterfile(), media_type="video/mp4")
+
+#https://fastapi.tiangolo.com/advanced/websockets/?h=web
+
     # with open(filePath, "rb") as file:
     #     file.seek(start)
     #     data = file.read(end - start)

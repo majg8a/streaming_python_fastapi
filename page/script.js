@@ -11,3 +11,4 @@
   document.body.appendChild(video);
   video.play();
 })();
+
