@@ -4,5 +4,13 @@ body {
   display: grid;
   place-content: center;
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
+}
+
+canvas {
+  height: 100vh !important;
+}
+
+video {
+  display: none;
 }
