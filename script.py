@@ -1,28 +1,37 @@
-from fastapi import FastAPI, Header
-from fastapi.responses import Response,StreamingResponse
+from fastapi import FastAPI, Header, WebSocket
+from fastapi.responses import Response, StreamingResponse
 from os import getcwd, path
 
 app = FastAPI()
 
-PORTION_SIZE = 1024 * 1024
+# PORTION_SIZE = 1024 * 1024
 
-CURRENT_DIR = getcwd() + "/"
+# CURRENT_DIR = getcwd() + "/"
 
 
-@app.get("/video/{nameVideo}")
-def getVideo(nameVideo: str, range: str = Header(None)):
-    # start, end = range.replace("bytes=", "").split("-")
-    # start = int(start)
-    # end = int(start + PORTION_SIZE)
-    filePath = CURRENT_DIR + nameVideo
+# @app.get("/video/{nameVideo}")
+# def getVideo(nameVideo: str, range: str = Header(None)):
+#     # start, end = range.replace("bytes=", "").split("-")
+#     # start = int(start)
+#     # end = int(start + PORTION_SIZE)
+#     filePath = CURRENT_DIR + nameVideo
 
-    def iterfile():
-        with open(filePath, "rb") as file:
-            yield from file
+#     def iterfile():
+#         with open(filePath, "rb") as file:
+#             yield from file
 
-    return StreamingResponse(iterfile(), media_type="video/mp4")
+#     return StreamingResponse(iterfile(), media_type="video/mp4")
 
-#https://fastapi.tiangolo.com/advanced/websockets/?h=web
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_bytes()
+        await websocket.send_bytes(data)
+
+
+# https://fastapi.tiangolo.com/advanced/websockets/?h=web
 
     # with open(filePath, "rb") as file:
     #     file.seek(start)
