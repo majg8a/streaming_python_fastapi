@@ -1,7 +1,6 @@
 # from fastapi import FastAPI, Header, WebSocket
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, Request
 # from fastapi.responses import Response, StreamingResponse, FileResponse
-from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -38,14 +37,17 @@ async def websocket_endpoint(websocket: WebSocket):
         await websocket.send_bytes(data)
 
 
-@app.get("/", response_class=RedirectResponse)
-def redirect(request):
-    print(f"dfasdfasdfasdf {request.url._url}")
-    return f"{request.url._url}/page/index.html"
+templates = Jinja2Templates(directory="page/")
 
 
-templates = Jinja2Templates(directory="/")
-app.mount("/page", StaticFiles(directory="./page"), name="page")
+@app.get("/ui")
+def form_post(request: Request):
+    return templates.TemplateResponse(
+        "index.html", context={"request": request}
+    )
+
+
+app.mount("/", StaticFiles(directory="page"), name="page")
 
 
 # https://fastapi.tiangolo.com/advanced/websockets/?h=web

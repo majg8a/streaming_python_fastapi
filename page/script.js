@@ -1,20 +1,21 @@
-const blobToImage = async (blob = new Blob([])) => {
+const base64BlobToImage = async (src) => {
   const img = new Image();
-  img.src = URL.createObjectURL(blob);
+  img.src = await src.text();
   await new Promise((res) => (img.onload = res));
   return img;
 };
 
-const videoToFrameBlob = async (video) => {
+const videoToFrameBlobBase64 = (video) => {
   const canvas = document.createElement("canvas");
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
   const context = canvas.getContext("2d");
-  context.drawImage(video, 0, 0, canvas.width, canvas.height);
-  return await new Promise((res) => canvas.toBlob(res));
+  context.drawImage(video, 0, 0);
+  const utf8Encode = new TextEncoder();
+  return utf8Encode.encode(canvas.toDataURL());
 };
 
-(async () => {
+const videoStreaming = async () => {
   const video = document.createElement("video");
   const mediastream = await navigator.mediaDevices
     .getUserMedia({ video: { width: 720, height: 360 } })
@@ -31,13 +32,14 @@ const videoToFrameBlob = async (video) => {
     await video.play();
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    const frameBlob = await videoToFrameBlob(video);
-    socket.send(frameBlob);
+    socket.send(videoToFrameBlobBase64(video));
   });
 
   socket.addEventListener("message", async ({ data }) => {
-    const img = await blobToImage(data);
-    context.drawImage(img, 0, 0, img.width, img.height);
-    setTimeout(async () => socket.send(await videoToFrameBlob(video)), 0);
+    const img = await base64BlobToImage(data);
+    context.drawImage(img, 0, 0);
+    setTimeout(async () => socket.send(videoToFrameBlobBase64(video)), 10);
   });
-})();
+};
+
+videoStreaming();
