@@ -21,7 +21,6 @@ const videoStreaming = async () => {
     .getUserMedia({ video: { width: 720, height: 360 } })
     .catch(alert);
   video.srcObject = mediastream;
-  document.body.append(video);
   const canvas = document.createElement("canvas");
 
   const context = canvas.getContext("2d");
