@@ -15,13 +15,12 @@ const videoToByteArrayBase64 = (video) => {
   return utf8Encode.encode(canvas.toDataURL());
 };
 
-const videoStreaming = async () => {
+const videoStreaming = async (canvas) => {
   const video = document.createElement("video");
   const mediastream = await navigator.mediaDevices
-    .getUserMedia({ video: { width: 720, height: 360 } })
+    .getUserMedia({ video: { width: 360, height: 360 } })
     .catch(alert);
   video.srcObject = mediastream;
-  const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
   const socket = new WebSocket("ws://localhost:5000/ws");
 
@@ -34,10 +33,14 @@ const videoStreaming = async () => {
 
   socket.addEventListener("message", async ({ data }) => {
     const img = await base64BlobToImage(data);
+    console.log(img.src);
+
     context.drawImage(img, 0, 0);
-    setTimeout(async () => socket.send(videoToByteArrayBase64(video)), 10);
+    // setTimeout(() => socket.send(videoToByteArrayBase64(video)), 10);
   });
   return canvas;
 };
 
-videoStreaming().then((canvas) => document.body.append(canvas));
+const canvas = document.createElement("canvas");
+document.body.append(canvas);
+videoStreaming(canvas);
