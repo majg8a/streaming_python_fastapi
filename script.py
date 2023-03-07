@@ -1,51 +1,35 @@
-# from fastapi import FastAPI, Header, WebSocket
 from fastapi import FastAPI, WebSocket, Request
-# from fastapi.responses import Response, StreamingResponse, FileResponse
+import base64
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+import numpy as np
+import cv2
 
 app = FastAPI()
 
 
-# PORTION_SIZE = 1024 * 1024
+def to_image_string(image_filepath):
+    return open(image_filepath, 'rb').read().encode('base64')
 
-# CURRENT_DIR = getcwd() + "/"
-
-
-# @app.get("/video/{nameVideo}")
-# def getVideo(nameVideo: str, range: str = Header(None)):
-#     # start, end = range.replace("bytes=", "").split("-")
-#     # start = int(start)
-#     # end = int(start + PORTION_SIZE)
-#     filePath = CURRENT_DIR + nameVideo
-
-#     def iterfile():
-#         with open(filePath, "rb") as file:
-#             yield from file
-
-#     return StreamingResponse(iterfile(), media_type="video/mp4")
-# @app.get("/", response_class=HTMLResponse)
-# async def pageUI(request):
-#     return templates.TemplateResponse("index.html", context={"request": request})
-
+def from_base64(base64_data):
+    nparr = np.fromstring(base64_data.decode('base64'), np.uint8)
+    return cv2.imdecode(nparr, cv2.IMREAD_ANYCOLOR)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     while True:
         data = await websocket.receive_bytes()
+        data.decode("utf-8")
         await websocket.send_bytes(data)
 
-
 templates = Jinja2Templates(directory="page/")
-
 
 @app.get("/ui")
 def form_post(request: Request):
     return templates.TemplateResponse(
         "index.html", context={"request": request}
     )
-
 
 app.mount("/", StaticFiles(directory="page"), name="page")
 

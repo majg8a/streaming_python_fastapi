@@ -21,11 +21,9 @@ const videoStreaming = async () => {
     .getUserMedia({ video: { width: 720, height: 360 } })
     .catch(alert);
   video.srcObject = mediastream;
-  document.body.append(video);
-  const canvas = document.createElement("canvas");
 
+  const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
-  document.body.append(canvas);
   const socket = new WebSocket("ws://localhost:5000/ws");
 
   socket.addEventListener("open", async (event) => {
@@ -38,8 +36,9 @@ const videoStreaming = async () => {
   socket.addEventListener("message", async ({ data }) => {
     const img = await base64BlobToImage(data);
     context.drawImage(img, 0, 0);
-    setTimeout(async () => socket.send(videoToFrameBlobBase64(video)), 10);
+    setTimeout(async () => socket.send(videoToFrameBlobBase64(video)), 0);
   });
+  return canvas;
 };
 
-videoStreaming();
+videoStreaming().then((canvas) => document.body.append(canvas));
