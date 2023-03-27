@@ -33,10 +33,13 @@ const videoStreaming = async (canvas) => {
 
   socket.addEventListener("message", async ({ data }) => {
     const img = await base64BlobToImage(data);
-    console.log(img.src);
-
     context.drawImage(img, 0, 0);
-    // setTimeout(() => socket.send(videoToByteArrayBase64(video)), 10);
+    setTimeout(() => socket.send(videoToByteArrayBase64(video)), 0);
+  });
+
+  socket.addEventListener("close", (event) => {
+    window.location.reload();
+    console.log("juan");
   });
   return canvas;
 };

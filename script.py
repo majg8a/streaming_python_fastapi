@@ -4,21 +4,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import numpy as np
 import cv2
-from PIL import Image
-import io
-
+import pose
 app = FastAPI()
-
-
-# Take in base64 string and return PIL image
-def stringToImage(base64_string):
-    return Image.open(io.BytesIO(imgdata))
-
-# convert PIL Image to an RGB image( technically a numpy array ) that's compatible with opencv
-
-
-def toRGB(image):
-    return cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB)
 
 
 @app.websocket("/ws")
@@ -27,13 +14,21 @@ async def websocket_endpoint(websocket: WebSocket):
     while True:
         data = await websocket.receive_bytes()
 
-        encoded_string = data.decode("utf-8").split(',')[1]
-        nparr = np.fromstring(base64.b64decode(encoded_string), np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        databstring = data.decode("utf-8").split(',')
 
-        # cv2.imwrite('myloadedfile.png', img)
+        filedata = databstring[0]
+        encoded_string = databstring[1]
 
-        await websocket.send_bytes(data)
+        img = cv2.imdecode(np.fromstring(base64.b64decode(
+            encoded_string), np.uint8), cv2.IMREAD_COLOR)
+
+        poseResults = pose.predict(img)[11:]
+        # print(poseResults[0])
+
+        imgstr = bytes(
+            f"{filedata},{str(base64.b64encode(cv2.imencode('.png', img)[1]), 'utf-8')}", "utf-8")
+
+        await websocket.send_bytes(imgstr)
 
 templates = Jinja2Templates(directory="page/")
 
